@@ -1,16 +1,165 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[My Octopress Blog]]></title>
-  <link href="http://yoursite.com/atom.xml" rel="self"/>
-  <link href="http://yoursite.com/"/>
-  <updated>2014-03-17T21:56:06-04:00</updated>
-  <id>http://yoursite.com/</id>
+  <title><![CDATA[Garbage Spaghetti Code]]></title>
+  <link href="http://bslisher.github.io/atom.xml" rel="self"/>
+  <link href="http://bslisher.github.io/"/>
+  <updated>2014-07-21T20:40:17-04:00</updated>
+  <id>http://bslisher.github.io/</id>
   <author>
-    <name><![CDATA[Your Name]]></name>
+    <name><![CDATA[Brent Slisher]]></name>
     
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Prevent Expensive JOINs and Magic Numbers With Enumerations]]></title>
+    <link href="http://bslisher.github.io/blog/2014/07/08/prevent-expensive-joins-and-magic-numbers-with-enumerations/"/>
+    <updated>2014-07-08T20:40:14-04:00</updated>
+    <id>http://bslisher.github.io/blog/2014/07/08/prevent-expensive-joins-and-magic-numbers-with-enumerations</id>
+    <content type="html"><![CDATA[<p>Suppose we&rsquo;re writing a system that keeps track of people in a company, and each person in the company is in one of four categories: managers, accountants, customer service, and software developers. We need to store each user with one of four discrete states, and representing these states with integers makes sense. You could have a <strong>categories</strong> table that simply stores each category&rsquo;s name and the corresponding ID.</p>
+
+<table>
+<thead>
+<tr>
+<th> CatergoryID </th>
+<th> CategoryName         </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> 0           </td>
+<td> management           </td>
+</tr>
+<tr>
+<td> 1           </td>
+<td> accounting           </td>
+</tr>
+<tr>
+<td> 2           </td>
+<td> customer service     </td>
+</tr>
+<tr>
+<td> 3           </td>
+<td> software development </td>
+</tr>
+</tbody>
+</table>
+
+
+<p><br />Fine. But when is this table going to get used? If you grab a list of users, do we really want to waste CPU cycles doing a JOIN just to have the category as a string instead of an integer?  That would make for an awkward if statement.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="k">if</span> <span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">category</span> <span class="o">==</span> <span class="s2">&quot;manager&quot;</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="c1">// ...</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">category</span> <span class="o">==</span> <span class="s2">&quot;accountants&quot;</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>     <span class="c1">// ...</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// ... and so on ...</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>But if we don&rsquo;t use string literals, we will have magic numbers in the code! We ought to use an enumeration instead. No need for string literals, and no need for magic numbers.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="kr">enum</span> <span class="nx">category</span> <span class="p">{</span>
+</span><span class='line'>     <span class="nx">management</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+</span><span class='line'>     <span class="nx">accounting</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>     <span class="nx">customerService</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+</span><span class='line'>     <span class="nx">softwareDevelopment</span> <span class="o">=</span> <span class="mi">3</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Enumerations were invented for just this purpose. Since these values rarely change &ndash; and if they do they&rsquo;ll require other code changes anyway &ndash; we should ditch the two-column table in favor of an enum. When you pair an enum with it&rsquo;s best friend, the switch statement, the resulting code is clean and readable.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="k">switch</span> <span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">category</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>     <span class="k">case</span> <span class="nx">category</span><span class="p">.</span><span class="nx">managers</span><span class="o">:</span>
+</span><span class='line'>          <span class="c1">// ...</span>
+</span><span class='line'>          <span class="k">break</span><span class="p">;</span>
+</span><span class='line'>     <span class="k">case</span> <span class="nx">category</span><span class="p">.</span><span class="nx">accounting</span><span class="o">:</span>
+</span><span class='line'>          <span class="c1">// ... and so on ...</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Is Everything an Object in JavaScript?]]></title>
+    <link href="http://bslisher.github.io/blog/2014/07/05/is-everything-an-object-in-javascript/"/>
+    <updated>2014-07-05T20:43:22-04:00</updated>
+    <id>http://bslisher.github.io/blog/2014/07/05/is-everything-an-object-in-javascript</id>
+    <content type="html"><![CDATA[<p>An odd feature of JavaScript is that even primitives are objects, or at least primitives inherit methods from the Object prototype. For example, numbers are objects.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="mi">42</span><span class="p">[</span><span class="s2">&quot;toString&quot;</span><span class="p">]()</span> <span class="c1">// result: &quot;42&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>What about booleans?</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="kc">true</span><span class="p">.</span><span class="nx">toString</span><span class="p">()</span> <span class="c1">// result: &quot;true&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And of course strings are objects:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="s2">&quot;hello&quot;</span><span class="p">.</span><span class="nx">length</span> <span class="c1">// result: 5</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The only primitives that aren&rsquo;t objects are undefined and null. Those really are primitive data types, though older browsers allowed you to be evil by setting the value of undefined to whatever you wanted. (This is fixed now: <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.1.1.3">http://www.ecma-international.org/ecma-262/5.1/#sec-15.1.1.3</a>)</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="kd">var</span> <span class="kc">undefined</span> <span class="o">=</span> <span class="s2">&quot;muahahaha&quot;</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>But although I can&rsquo;t do <code>null.toString()</code> or <code>null.length</code>, how do you explain this?</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="k">typeof</span> <span class="kc">null</span> <span class="c1">// result: &quot;object&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Oh well, JavaScript has it&rsquo;s quirks.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[YAGNI: You Are Gonna Need It]]></title>
+    <link href="http://bslisher.github.io/blog/2014/07/04/yagni-you-are-gonna-need-it/"/>
+    <updated>2014-07-04T14:51:00-04:00</updated>
+    <id>http://bslisher.github.io/blog/2014/07/04/yagni-you-are-gonna-need-it</id>
+    <content type="html"><![CDATA[<p>YAGNI is a well-intentioned acronym to remind software developers not to over-engineer. More often than not, though, you are going to need it. Always write with the assumption that what you&rsquo;re doing will be the foundation for something larger. Use the database instead of a static page; use active record and DTOs instead of raw SQL statements; use well-structured, object-oriented code instead of just making it work. It will save a lot of headaches for the next guy.</p>
+
+<p>Code should be readable by humans, and only incidentally by a machine. So comment the code; make it concise. Do this even if you&rsquo;re the only one who will ever work on it. If I wrote something more than a month ago, it might as well have been someone else.</p>
+]]></content>
+  </entry>
   
 </feed>

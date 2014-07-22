@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Garbage Spaghetti Code</title>
+  <title>Prevent Expensive JOINs and Magic Numbers With Enumerations - Garbage Spaghetti Code</title>
   <meta name="author" content="Brent Slisher">
 
   
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://bslisher.github.io">
+  <link rel="canonical" href="http://bslisher.github.io/blog/2014/07/08/prevent-expensive-joins-and-magic-numbers-with-enumerations">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Garbage Spaghetti Code" type="application/atom+xml">
@@ -82,15 +82,12 @@
 </nav>
   <div id="main">
     <div id="content">
-      <div class="blog-index">
+      <div>
+<article class="hentry" role="article">
   
-  
-  
-    <article>
-      
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/07/08/prevent-expensive-joins-and-magic-numbers-with-enumerations/">Prevent Expensive JOINs and Magic Numbers With Enumerations</a></h1>
+      <h1 class="entry-title">Prevent Expensive JOINs and Magic Numbers With Enumerations</h1>
     
     
       <p class="meta">
@@ -113,7 +110,7 @@
   </header>
 
 
-  <div class="entry-content"><p>Suppose we&rsquo;re writing a system that keeps track of people in a company, and each person in the company is in one of four categories: managers, accountants, customer service, and software developers. We need to store each user with one of four discrete states, and representing these states with integers makes sense. You could have a <strong>categories</strong> table that simply stores each category&rsquo;s name and the corresponding ID.</p>
+<div class="entry-content"><p>Suppose we&rsquo;re writing a system that keeps track of people in a company, and each person in the company is in one of four categories: managers, accountants, customer service, and software developers. We need to store each user with one of four discrete states, and representing these states with integers makes sense. You could have a <strong>categories</strong> table that simply stores each category&rsquo;s name and the corresponding ID.</p>
 
 <table>
 <thead>
@@ -200,93 +197,16 @@
 </span></code></pre></td></tr></table></div></figure>
 
 </div>
-  
-  
 
 
-    </article>
-  
-  
-    <article>
+  <footer>
+    <p class="meta">
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/07/05/is-everything-an-object-in-javascript/">Is Everything an Object in JavaScript?</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
   
 
+<span class="byline author vcard">Authored by <span class="fn">Brent Slisher</span></span>
 
-<time datetime="2014-07-05T20:43:22-04:00" pubdate data-updated="true">Jul 5<span>th</span>, 2014</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>An odd feature of JavaScript is that even primitives are objects, or at least primitives inherit methods from the Object prototype. For example, numbers are objects.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="mi">42</span><span class="p">[</span><span class="s2">&quot;toString&quot;</span><span class="p">]()</span> <span class="c1">// result: &quot;42&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>What about booleans?</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="kc">true</span><span class="p">.</span><span class="nx">toString</span><span class="p">()</span> <span class="c1">// result: &quot;true&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>And of course strings are objects:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="s2">&quot;hello&quot;</span><span class="p">.</span><span class="nx">length</span> <span class="c1">// result: 5</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>The only primitives that aren&rsquo;t objects are undefined and null. Those really are primitive data types, though older browsers allowed you to be evil by setting the value of undefined to whatever you wanted. (This is fixed now: <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.1.1.3">http://www.ecma-international.org/ecma-262/5.1/#sec-15.1.1.3</a>)</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="kd">var</span> <span class="kc">undefined</span> <span class="o">=</span> <span class="s2">&quot;muahahaha&quot;</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>But although I can&rsquo;t do <code>null.toString()</code> or <code>null.length</code>, how do you explain this?</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="k">typeof</span> <span class="kc">null</span> <span class="c1">// result: &quot;object&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Oh well, JavaScript has it&rsquo;s quirks.</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/07/04/yagni-you-are-gonna-need-it/">YAGNI: You Are Gonna Need It</a></h1>
-    
-    
-      <p class="meta">
-        
 
 
 
@@ -298,34 +218,41 @@
   
 
 
-<time datetime="2014-07-04T14:51:00-04:00" pubdate data-updated="true">Jul 4<span>th</span>, 2014</time>
-        
-      </p>
+<time datetime="2014-07-08T20:40:14-04:00" pubdate data-updated="true">Jul 8<span>th</span>, 2014</time>
+      
+
+
+    </p>
     
-  </header>
-
-
-  <div class="entry-content"><p>YAGNI is a well-intentioned acronym to remind software developers not to over-engineer. More often than not, though, you are going to need it. Always write with the assumption that what you&rsquo;re doing will be the foundation for something larger. Use the database instead of a static page; use active record and DTOs instead of raw SQL statements; use well-structured, object-oriented code instead of just making it work. It will save a lot of headaches for the next guy.</p>
-
-<p>Code should be readable by humans, and only incidentally by a machine. So comment the code; make it concise. Do this even if you&rsquo;re the only one who will ever work on it. If I wrote something more than a month ago, it might as well have been someone else.</p>
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://bslisher.github.io/blog/2014/07/08/prevent-expensive-joins-and-magic-numbers-with-enumerations/" data-via="bslisher" data-counturl="http://bslisher.github.io/blog/2014/07/08/prevent-expensive-joins-and-magic-numbers-with-enumerations/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
 </div>
-  
-  
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/07/05/is-everything-an-object-in-javascript/" title="Previous Post: Is everything an object in JavaScript?">&laquo; Is everything an object in JavaScript?</a>
+      
+      
+    </p>
+  </footer>
+</article>
 
 
-    </article>
-  
-  <div class="pagination">
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-  </div>
 </div>
+
 <aside class="sidebar">
   
     
   
 </aside>
+
 
     </div>
   </div>
